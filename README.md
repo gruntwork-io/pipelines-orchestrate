@@ -6,7 +6,7 @@ This GitHub Action, named "Pipelines Orchestrate," is designed to automate the o
 
 ### `repository-path`
 
-The relative path to the infra-live code repository. This input is required.
+The relative path to the infra-live code repository. Defaults to "."
 
 ### `repository-url`
 
@@ -26,11 +26,11 @@ The type of event that triggered the workflow. Choose between "push" (for direct
 
 ### `pipelines-version`
 
-The version of the Pipelines CLI to be used (tag, SHA, or branch). This input is required.
+The version of the Pipelines CLI to be used (tag). This input is required.
 
 ### `token`
 
-GitHub Personal Access Token (PAT) required for cloning the Pipelines repository. This input is required.
+GitHub Personal Access Token (PAT) required for retrieving the pipelines binary. This input is required.
 
 ## Outputs
 

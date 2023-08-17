@@ -21,10 +21,10 @@ inputs:
       - push
       - pr-synched-created
   pipelines-version:
-    description: "The version of the Pipelines CLI (tag, sha, or branch)"
+    description: "The version of the Pipelines CLI (tag)"
     required: true
   token:
-    description: "GitHub PAT to clone the pipelines repo"
+    description: "GitHub PAT to retrieve the pipelines repo"
     required: true
 outputs:
   jobs:
@@ -48,6 +48,7 @@ runs:
       run: |
         sudo mv /tmp/pipelines /usr/local/bin/pipelines
         sudo chmod +x /usr/local/bin/pipelines
+        
     - name: Run Pipelines Orchestrate
       id: orchestrate
       shell: bash
