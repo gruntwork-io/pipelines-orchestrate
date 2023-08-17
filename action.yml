@@ -1,0 +1,63 @@
+name: "Pipelines Orchestrate"
+description: "Orchestrate Terragrunt plan/apply/destroy jobs with Gruntwork Pipelines"
+inputs:
+  repository-path:
+    description: "The relative path to the infra-live code repository"
+    required: true
+    default: "."
+  repository-url:
+    description: "GitHub URL for the repository"
+    required: true
+  source-ref:
+    description: "The commit to use as the basis against which a diff will be generated"
+    required: true
+  target-ref:
+    description: "The most recent commit"
+    required: true
+  event-type:
+    description: "push (to main) or pr-created-synched (PRs)"
+    required: true
+    options:
+      - push
+      - pr-synched-created
+  pipelines-version:
+    description: "The version of the Pipelines CLI (tag)"
+    required: true
+  token:
+    description: "GitHub PAT to retrieve the pipelines repo"
+    required: true
+outputs:
+  jobs:
+    description: "An array of jobs to dispatch to Pipelines Execute"
+    value: ${{ steps.orchestrate.outputs.jobs }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Download pipelines binary
+      uses: dsaltares/fetch-gh-release-asset@master
+      with:
+        repo: 'gruntwork-io/pipelines-cli'
+        version: ${{ inputs.pipelines-version }}
+        file: 'pipelines_linux_amd64'
+        target: '/tmp/pipelines'
+        token: ${{ inputs.token }}
+
+    - name: Install pipelines
+      shell: bash
+      run: |
+        sudo mv /tmp/pipelines /usr/local/bin/pipelines
+        sudo chmod +x /usr/local/bin/pipelines
+        
+    - name: Run Pipelines Orchestrate
+      id: orchestrate
+      shell: bash
+      run: |
+        JOBS=$(pipelines orchestrate \
+                --repository ${{ inputs.repository-path }} \
+                --repository-remote-url ${{ inputs.repository-url }} \
+                --source-ref ${{ inputs.source-ref }} \
+                --target-ref ${{ inputs.target-ref }} \
+                --event-type ${{ inputs.event-type }} | jq .)
+        echo $JOBS
+        echo "jobs=$(echo $JOBS)" >> $GITHUB_OUTPUT
