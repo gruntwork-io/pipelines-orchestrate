@@ -23,7 +23,7 @@ inputs:
   pipelines-version:
     description: "The version of the Pipelines CLI (tag, sha, or branch)"
     required: true
-    default: v0.0.1
+    default: v0.1.0
   token:
     description: "GitHub PAT to clone the pipelines repo"
     required: true
@@ -35,19 +35,20 @@ outputs:
 runs:
   using: "composite"
   steps:
-    - name: Check out pipelines # temp for testing
-      uses: actions/checkout@v3
+    - name: Download pipelines binary
+      uses: dsaltares/fetch-gh-release-asset@master
       with:
-        repository: gruntwork-io/pipelines
+        repo: 'gruntwork-io/pipelines-cli'
+        version: ${{ inputs.pipelines-version }}
+        file: 'pipelines_linux_amd64'
+        target: '/tmp/pipelines'
         token: ${{ inputs.token }}
-        ref: ${{ inputs.pipelines-version }}
-        path: pipelines
-    - name: Build pipelines # temp for testing
+
+    - name: Install pipelines
       shell: bash
-      working-directory: pipelines
       run: |
-        go build
-        sudo mv pipelines /usr/local/bin
+        sudo mv /tmp/pipelines/pipelines_linux_amd64 /usr/local/bin/pipelines
+        sudo chmod +x /usr/local/bin/pipelines
     - name: Run Pipelines Orchestrate
       id: orchestrate
       shell: bash
