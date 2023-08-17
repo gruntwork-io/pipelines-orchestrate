@@ -23,7 +23,6 @@ inputs:
   pipelines-version:
     description: "The version of the Pipelines CLI (tag, sha, or branch)"
     required: true
-    default: v0.1.0
   token:
     description: "GitHub PAT to clone the pipelines repo"
     required: true
@@ -47,7 +46,7 @@ runs:
     - name: Install pipelines
       shell: bash
       run: |
-        sudo mv /tmp/pipelines/pipelines_linux_amd64 /usr/local/bin/pipelines
+        sudo mv /tmp/pipelines /usr/local/bin/pipelines
         sudo chmod +x /usr/local/bin/pipelines
     - name: Run Pipelines Orchestrate
       id: orchestrate
