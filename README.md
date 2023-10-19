@@ -26,7 +26,7 @@ The type of event that triggered the workflow. Choose between "push" (for direct
 
 ### `gruntwork-config`
 
-The Base64-encoded Gruntwork Config YAML file. This input is required.
+Base64 encoded content of the Gruntwork Config YAML file. This input is required.
 
 ### `token`
 

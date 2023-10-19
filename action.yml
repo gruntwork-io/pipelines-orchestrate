@@ -21,7 +21,7 @@ inputs:
       - push
       - pr-synched-created
   gruntwork-config:
-    description: "Base64 encoded Gruntwork Config YAML file"
+    description: "Base64 encoded content of the Gruntwork Config YAML file"
     required: true
   token:
     description: "GitHub PAT to retrieve the pipelines repo"
