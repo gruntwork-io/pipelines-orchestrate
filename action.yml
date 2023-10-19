@@ -38,15 +38,14 @@ runs:
       id: config
       shell: bash
       run: |
-        pipelines-version=$(echo "${{ inputs.gruntwork-config }}" | base64 -d | yq '.pipelines.cli-version')
-        echo "pipelines-version is: " $pipelines-version
-        echo "pipelines-version=$pipelines-version" >> $GITHUB_OUTPUT
+        pipelines_version=$(echo "${{ inputs.gruntwork-config }}" | base64 -d | yq '.pipelines.cli-version')
+        echo "pipelines_version=$pipelines_version" >> $GITHUB_OUTPUT
 
     - name: Download pipelines binary
       uses: dsaltares/fetch-gh-release-asset@master
       with:
         repo: "gruntwork-io/pipelines-cli"
-        version: ${{ steps.config.outputs.pipelines-version }}
+        version: ${{ steps.config.outputs.pipelines_version }}
         file: "pipelines_linux_amd64"
         target: "/tmp/pipelines"
         token: ${{ inputs.token }}
