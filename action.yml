@@ -38,9 +38,7 @@ runs:
       id: config
       shell: bash
       run: |
-        which yq
-        which base64
-        pipelines-version=$(echo ${{ inputs.gruntwork-config }} | base64 -d | yq '.pipelines.cli-version')
+        pipelines-version=$(echo "${{ inputs.gruntwork-config }}" | base64 -d | yq '.pipelines.cli-version')
         echo "pipelines-version=$pipelines-version" >> $GITHUB_OUTPUT
 
     - name: Download pipelines binary
