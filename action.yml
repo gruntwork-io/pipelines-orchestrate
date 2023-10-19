@@ -20,8 +20,8 @@ inputs:
     options:
       - push
       - pr-synched-created
-  pipelines-version:
-    description: "The version of the Pipelines CLI (tag)"
+  gruntwork-config:
+    description: "Base64 encoded Gruntwork Config YAML file"
     required: true
   token:
     description: "GitHub PAT to retrieve the pipelines repo"
@@ -34,13 +34,20 @@ outputs:
 runs:
   using: "composite"
   steps:
+    - name: Get Pipelines Binary version
+      id: config
+      shell: bash
+      run: |
+        pipelines-version=$(echo ${{ inputs.gruntwork-config }} | base64 -d | yq '.pipelines.cli-version')
+        echo "pipelines-version=$pipelines-version" >> $GITHUB_ENV
+
     - name: Download pipelines binary
       uses: dsaltares/fetch-gh-release-asset@master
       with:
-        repo: 'gruntwork-io/pipelines-cli'
-        version: ${{ inputs.pipelines-version }}
-        file: 'pipelines_linux_amd64'
-        target: '/tmp/pipelines'
+        repo: "gruntwork-io/pipelines-cli"
+        version: ${{ steps.config.outputs.pipelines-version }}
+        file: "pipelines_linux_amd64"
+        target: "/tmp/pipelines"
         token: ${{ inputs.token }}
 
     - name: Install pipelines
@@ -48,7 +55,7 @@ runs:
       run: |
         sudo mv /tmp/pipelines /usr/local/bin/pipelines
         sudo chmod +x /usr/local/bin/pipelines
-        
+
     - name: Run Pipelines Orchestrate
       id: orchestrate
       shell: bash
