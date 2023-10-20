@@ -70,7 +70,7 @@ jobs:
           source-ref: ${{ github.event.before }}
           target-ref: ${{ github.sha }}
           event-type: ${{ github.event_name }}
-          pipelines-version: 'v0.1.0'  # Replace with the desired Pipelines CLI version
+          gruntwork-config: "cGlwZWxpbmVzO...VudF92ZXJzaW9uOiAwLjQ4LjEK" # Base64 encoded content of the Gruntwork Config YAML file
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Dispatch Pipelines Jobs
