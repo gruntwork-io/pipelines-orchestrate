@@ -24,9 +24,9 @@ The most recent commit. This input is required.
 
 The type of event that triggered the workflow. Choose between "push" (for direct pushes to the main branch) or "pr-synched-created" (for pull request synchronization/creation). This input is required.
 
-### `pipelines-version`
+### `gruntwork-config`
 
-The version of the Pipelines CLI to be used (tag). This input is required.
+Base64 encoded content of the Gruntwork Config YAML file. This input is required.
 
 ### `token`
 
@@ -56,7 +56,7 @@ jobs:
   orchestrate_pipelines:
     name: Orchestrate Pipelines Jobs
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
@@ -70,11 +70,11 @@ jobs:
           source-ref: ${{ github.event.before }}
           target-ref: ${{ github.sha }}
           event-type: ${{ github.event_name }}
-          pipelines-version: 'v0.1.0'  # Replace with the desired Pipelines CLI version
+          gruntwork-config: "cGlwZWxpbmVzO...VudF92ZXJzaW9uOiAwLjQ4LjEK" # Base64 encoded content of the Gruntwork Config YAML file
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Dispatch Pipelines Jobs
         run: |
           # Use the output 'jobs' from the orchestrate step to dispatch jobs
-          
+
 ```
