@@ -8,7 +8,9 @@ outputs:
   jobs:
     description: "An array of jobs to dispatch to Pipelines Execute"
     value: ${{ steps.orchestrate.outputs.jobs }}
-
+  pipelines_cli_version:
+    description: "The version of pipelines cli that was used"
+    value: ${{ steps.gruntwork.outputs.pipelines-cli_version }}
 runs:
   using: "composite"
   steps:
