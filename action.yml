@@ -1,28 +1,6 @@
 name: "Pipelines Orchestrate"
 description: "Orchestrate Terragrunt plan/apply/destroy jobs with Gruntwork Pipelines"
 inputs:
-  repository-path:
-    description: "The relative path to the infra-live code repository"
-    required: true
-    default: "."
-  repository-url:
-    description: "GitHub URL for the repository"
-    required: true
-  source-ref:
-    description: "The commit to use as the basis against which a diff will be generated"
-    required: true
-  target-ref:
-    description: "The most recent commit"
-    required: true
-  event-type:
-    description: "push (to main) or pr-created-synched (PRs)"
-    required: true
-    options:
-      - push
-      - pr-synched-created
-  gruntwork-config:
-    description: "Base64 encoded content of the Gruntwork Config YAML file"
-    required: true
   token:
     description: "GitHub PAT to retrieve the pipelines repo"
     required: true
@@ -30,22 +8,54 @@ outputs:
   jobs:
     description: "An array of jobs to dispatch to Pipelines Execute"
     value: ${{ steps.orchestrate.outputs.jobs }}
-
+  pipelines_cli_version:
+    description: "The version of pipelines cli that was used"
+    value: ${{ steps.gruntwork.outputs.pipelines-cli_version }}
 runs:
   using: "composite"
   steps:
-    - name: Get Pipelines Binary version
-      id: config
+    - uses: actions/checkout@v4
+      with:
+        # Fetch all history
+        fetch-depth: 0
+
+    - name: Read Gruntwork config file
+      id: gruntwork
       shell: bash
       run: |
-        pipelines_version=$(echo "${{ inputs.gruntwork-config }}" | base64 -d | yq '.pipelines.cli-version')
-        echo "pipelines_version=$pipelines_version" >> $GITHUB_OUTPUT
+        pipelines_cli_version="$(yq -r .pipelines.cli-version .gruntwork/config.yml)"
+        echo "pipelines_cli_version=$pipelines_cli_version" >> $GITHUB_OUTPUT
+
+    - name: Set custom ref variables
+      id: ref
+      shell: bash
+      # If this run was triggered manually, we'll use the source and target ref from the user input. Otherwise, we'll
+      # use our default approach.
+      # pull requests need to use pull_request.head.sha, rather than HEAD, because by default HEAD for PRs is a merge commit that isn't in the actual history
+      run: |
+        echo "source_ref=${{ inputs.source_ref || '$(./.github/scripts/source-ref.sh)'}}" >> $GITHUB_OUTPUT
+
+        if [[ '${{  github.event_name }}' = 'pull_request' ]]; then
+          echo "target_ref=${{ inputs.target_ref || github.event.pull_request.head.sha }}" >> $GITHUB_OUTPUT
+        else
+          echo "target_ref=${{ inputs.target_ref || '$(git rev-parse HEAD)'}}" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Get event-type
+      shell: bash
+      id: event_type
+      run: |
+        if [[ "${GITHUB_REF##*/}" == "main" ]]; then
+            echo "event_type=push" >> $GITHUB_OUTPUT
+        else
+            echo "event_type=pr-synched-created" >> $GITHUB_OUTPUT
+        fi
 
     - name: Download pipelines binary
       uses: dsaltares/fetch-gh-release-asset@master
       with:
         repo: "gruntwork-io/pipelines-cli"
-        version: "tags/${{ steps.config.outputs.pipelines_version }}"
+        version: "tags/${{ steps.gruntwork.outputs.pipelines_version }}"
         file: "pipelines_linux_amd64"
         target: "/tmp/pipelines"
         token: ${{ inputs.token }}
@@ -59,12 +69,15 @@ runs:
     - name: Run Pipelines Orchestrate
       id: orchestrate
       shell: bash
+      env:
+        REPO_URL: ${{ github.server_url }}/${{ github.repository }}
+        REPO_PATH: "."
       run: |
         JOBS=$(pipelines orchestrate \
-                --repository ${{ inputs.repository-path }} \
-                --repository-remote-url ${{ inputs.repository-url }} \
-                --source-ref ${{ inputs.source-ref }} \
-                --target-ref ${{ inputs.target-ref }} \
-                --event-type ${{ inputs.event-type }} | jq .)
+                --repository ${{ $REPO_PATH }} \
+                --repository-remote-url ${{ $REPO_URL }} \
+                --source-ref ${{ steps.ref.outputs.source-ref }} \
+                --target-ref ${{ steps.ref.outputs.target-ref }} \
+                --event-type ${{ steps.event_type.outputs.event_type }} | jq .)
         echo $JOBS
         echo "jobs=$(echo $JOBS)" >> $GITHUB_OUTPUT
