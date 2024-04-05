@@ -55,7 +55,7 @@ runs:
       uses: dsaltares/fetch-gh-release-asset@master
       with:
         repo: "gruntwork-io/pipelines-cli"
-        version: "tags/${{ steps.gruntwork.outputs.pipelines_version }}"
+        version: "tags/${{ steps.gruntwork.outputs.pipelines_cli_version }}"
         file: "pipelines_linux_amd64"
         target: "/tmp/pipelines"
         token: ${{ inputs.token }}
