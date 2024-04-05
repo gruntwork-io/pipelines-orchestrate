@@ -74,10 +74,10 @@ runs:
         REPO_PATH: "."
       run: |
         JOBS=$(pipelines orchestrate \
-                --repository $REPO_PATH \
-                --repository-remote-url $REPO_URL \
-                --source-ref ${{ steps.ref.outputs.source-ref }} \
-                --target-ref ${{ steps.ref.outputs.target-ref }} \
+                --repository ${{ $REPO_PATH }} \
+                --repository-remote-url ${{ $REPO_URL }} \
+                --source-ref ${{ steps.ref.outputs.source_ref }} \
+                --target-ref ${{ steps.ref.outputs.target_ref }} \
                 --event-type ${{ steps.event_type.outputs.event_type }} | jq .)
         echo $JOBS
         echo "jobs=$(echo $JOBS)" >> $GITHUB_OUTPUT
