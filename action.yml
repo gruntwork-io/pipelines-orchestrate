@@ -32,13 +32,19 @@ runs:
       # If this run was triggered manually, we'll use the source and target ref from the user input. Otherwise, we'll
       # use our default approach.
       # pull requests need to use pull_request.head.sha, rather than HEAD, because by default HEAD for PRs is a merge commit that isn't in the actual history
+      env:
+        ACTION_PATH: ${{ github.action_path }}
+        SOURCE_REF: ${{ inputs.source_ref }}
+        EVENT_NAME: ${{ github.event_name }}
+        PR_TARGET_REF: ${{ inputs.target_ref || github.event.pull_request.head.sha }}
+        HEAD_TARGET_REF: ${{ inputs.target_ref }}
       run: |
-        echo "source_ref=${{ inputs.source_ref || '$(./.github/scripts/source-ref.sh)'}}" >> $GITHUB_OUTPUT
+        echo "source_ref=${SOURCE_REF:-$($ACTION_PATH/scripts/source-ref.sh)}" >> $GITHUB_OUTPUT
 
-        if [[ '${{  github.event_name }}' = 'pull_request' ]]; then
-          echo "target_ref=${{ inputs.target_ref || github.event.pull_request.head.sha }}" >> $GITHUB_OUTPUT
+        if [[ "$EVENT_NAME" = 'pull_request' ]]; then
+          echo "target_ref=$TARGET_REF" >> $GITHUB_OUTPUT
         else
-          echo "target_ref=${{ inputs.target_ref || '$(git rev-parse HEAD)'}}" >> $GITHUB_OUTPUT
+          echo "target_ref=${HEAD_TARGET_REF:-$(git rev-parse HEAD)}" >> $GITHUB_OUTPUT
         fi
 
     - name: Get event-type
@@ -72,12 +78,15 @@ runs:
       env:
         REPO_URL: ${{ github.server_url }}/${{ github.repository }}
         REPO_PATH: "."
+        SOURCE_REF: ${{ steps.ref.outputs.source_ref }}
+        TARGET_REF: ${{ steps.ref.outputs.target_ref }}
+        EVENT_TYPE: ${{ steps.event_type.outputs.event_type }}
       run: |
         JOBS=$(pipelines orchestrate \
-                --repository $REPO_PATH \
-                --repository-remote-url $REPO_URL \
-                --source-ref ${{ steps.ref.outputs.source_ref }} \
-                --target-ref ${{ steps.ref.outputs.target_ref }} \
-                --event-type ${{ steps.event_type.outputs.event_type }} | jq .)
+                --repository "$REPO_PATH" \
+                --repository-remote-url "$REPO_URL" \
+                --source-ref "$SOURCE_REF" \
+                --target-ref "$TARGET_REF" \
+                --event-type "$EVENT_TYPE" | jq -c .)
         echo $JOBS
-        echo "jobs=$(echo $JOBS)" >> $GITHUB_OUTPUT
+        echo "jobs=$JOBS" >> $GITHUB_OUTPUT
