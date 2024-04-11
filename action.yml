@@ -42,7 +42,7 @@ runs:
         echo "source_ref=${SOURCE_REF:-$($ACTION_PATH/scripts/source-ref.sh)}" >> $GITHUB_OUTPUT
 
         if [[ "$EVENT_NAME" = 'pull_request' ]]; then
-          echo "target_ref=$TARGET_REF" >> $GITHUB_OUTPUT
+          echo "target_ref=$PR_TARGET_REF" >> $GITHUB_OUTPUT
         else
           echo "target_ref=${HEAD_TARGET_REF:-$(git rev-parse HEAD)}" >> $GITHUB_OUTPUT
         fi
