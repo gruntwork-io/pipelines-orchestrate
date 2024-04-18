@@ -107,4 +107,4 @@ runs:
       if: failure()
       with:
         step_name: "Detect Changes"
-        step_status: "failure"
+        step_status: "failed"
