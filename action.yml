@@ -19,6 +19,11 @@ runs:
         # Fetch all history
         fetch-depth: 0
 
+    - name: Update comment
+      uses: gruntwork-io/pipelines-status-update@main
+      with:
+        summary_status: "🔄 Detecting Infrastructure Changes..."
+
     - name: Read Gruntwork config file
       id: gruntwork
       shell: bash
@@ -90,3 +95,8 @@ runs:
                 --event-type "$EVENT_TYPE" | jq -c .)
         echo $JOBS
         echo "jobs=$JOBS" >> $GITHUB_OUTPUT
+
+    - name: Update comment
+      uses: gruntwork-io/pipelines-status-update@main
+      with:
+        orchestrate_jobs: ${{ steps.orchestrate.outputs.jobs }}
