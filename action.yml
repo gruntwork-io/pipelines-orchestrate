@@ -98,5 +98,13 @@ runs:
 
     - name: Update comment
       uses: gruntwork-io/pipelines-status-update@main
+      if: success()
       with:
         orchestrate_jobs: ${{ steps.orchestrate.outputs.jobs }}
+
+    - name: Update comment
+      uses: gruntwork-io/pipelines-status-update@main
+      if: failure()
+      with:
+        step_name: "Detect Changes"
+        step_status: "failure"
