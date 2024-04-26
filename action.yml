@@ -4,16 +4,24 @@ inputs:
   token:
     description: "GitHub PAT to retrieve the pipelines repo"
     required: true
+
 outputs:
   jobs:
     description: "An array of jobs to dispatch to Pipelines Execute"
     value: ${{ steps.orchestrate.outputs.jobs }}
-  pipelines_cli_version:
-    description: "The version of pipelines cli that was used"
-    value: ${{ steps.gruntwork.outputs.pipelines-cli_version }}
+
 runs:
   using: "composite"
   steps:
+
+    - name: Check that required environemnt variables are set
+      shell: bash
+      run: |
+        if [[ -z "$PIPELINES_CLI_VERSION" ]]; then
+          echo "::error::pipelines-orchestrate >= v3 requires that PIPELINES_CLI_VERSION be set, this likely indicates that pipelines orchestrate was version-bumped without also updating pipelines-workflows.  If you are not familiar with pipelines-workflows it likely means you are on an older version of pipelines and should either revert the version change of pipelines-orchestrate or reach out to support@gruntwork.io" >&2
+          exit 1
+        fi
+
     - uses: actions/checkout@v4
       with:
         # Fetch all history
@@ -23,13 +31,6 @@ runs:
       uses: gruntwork-io/pipelines-status-update@main
       with:
         summary_status: "🔄 Detecting Infrastructure Changes..."
-
-    - name: Read Gruntwork config file
-      id: gruntwork
-      shell: bash
-      run: |
-        pipelines_cli_version="$(yq -r .pipelines.cli-version .gruntwork/config.yml)"
-        echo "pipelines_cli_version=$pipelines_cli_version" >> $GITHUB_OUTPUT
 
     - name: Set custom ref variables
       id: ref
@@ -66,7 +67,7 @@ runs:
       uses: dsaltares/fetch-gh-release-asset@master
       with:
         repo: "gruntwork-io/pipelines-cli"
-        version: "tags/${{ steps.gruntwork.outputs.pipelines_cli_version }}"
+        version: "tags/${{ env.PIPELINES_CLI_VERSION }}"
         file: "pipelines_linux_amd64"
         target: "/tmp/pipelines"
         token: ${{ inputs.token }}
