@@ -17,7 +17,7 @@ runs:
     - name: Check that required environemnt variables are set
       shell: bash
       run: |
-        if [[ -z "$PIPELINES_CLI_VERSIONN" ]]; then
+        if [[ -z "$PIPELINES_CLI_VERSION" ]]; then
           echo "::error::pipelines-orchestrate >= v3 requires that PIPELINES_CLI_VERSION be set, this likely indicates that pipelines orchestrate was version-bumped without also updating pipelines-workflows." >&2
           exit 1
         fi
