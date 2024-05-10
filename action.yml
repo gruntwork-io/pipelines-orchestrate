@@ -28,7 +28,7 @@ runs:
         fetch-depth: 0
 
     - name: Update comment
-      uses: gruntwork-io/pipelines-status-update@v0.2.1
+      uses: gruntwork-io/pipelines-status-update@ztest
       with:
         summary_status: "🔄 Detecting Infrastructure Changes..."
 
@@ -98,13 +98,13 @@ runs:
         echo "jobs=$JOBS" >> $GITHUB_OUTPUT
 
     - name: Update comment
-      uses: gruntwork-io/pipelines-status-update@v0.2.1
+      uses: gruntwork-io/pipelines-status-update@ztest
       if: success()
       with:
         orchestrate_jobs: ${{ steps.orchestrate.outputs.jobs }}
 
     - name: Update comment
-      uses: gruntwork-io/pipelines-status-update@v0.2.1
+      uses: gruntwork-io/pipelines-status-update@ztest
       if: failure()
       with:
         step_name: "Detect Changes"
